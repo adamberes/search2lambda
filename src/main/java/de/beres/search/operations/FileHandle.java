@@ -65,19 +65,7 @@ public class FileHandle {
                 case "docx"://2022-10-17T05:49:00Z
                     if(settings.getDocx().booleanValue()) {
                         date = parseFile.getKeyValueExtractContentUsingParser(file.toString(), configurationProps.getDocx(), settings.getOperation());
-                        //                       date = parseFile.getKeyValueUsingDetector(file.toString(), configurationProps.getJpg());
-                        dateOperations.convertFromMetadata(date);
-                    }
-                    break;
-                case "js":
-                    if(settings.getJs().booleanValue()) {
-                        date = parseFile.getKeyValueExtractContentUsingParser(file.toString(), configurationProps.getJs(), settings.getOperation());
-                        dateOperations.convertFromMetadata(date);
-                    }
-                    break;
-                case "jsx":
-                    if(settings.getJsx().booleanValue()) {
-                        date = parseFile.getKeyValueExtractContentUsingParser(file.toString(), configurationProps.getJsx(), settings.getOperation());
+                        date = parseFile.getKeyValueUsingDetector(file.toString(), configurationProps.getJpg());
                         dateOperations.convertFromMetadata(date);
                     }
                     break;
