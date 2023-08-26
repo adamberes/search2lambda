@@ -1,7 +1,7 @@
 package de.beres.search;
 
 import de.beres.search.content.WordTransitiv2Directory;
-import de.beres.search.operations.FileHandle;
+import de.beres.search.operations.FileHandleCopy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,9 +15,9 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 @Slf4j
 @Service
-public class FileVisitorImpl implements FileVisitor<Path> {
+public class FileVisitorImplCopy implements FileVisitor<Path> {
     @Autowired
-    FileHandle fileHandle;
+    FileHandleCopy fileHandleCopy;
     @Autowired
     ConfigurationProps configurationProps;
 
@@ -34,7 +34,7 @@ public class FileVisitorImpl implements FileVisitor<Path> {
         log.info("An INFO Message");
         log.warn("A WARN Message");
         log.error("An ERROR Message");
-        FileVisitorImpl fileVisitor = this;
+        FileVisitorImplCopy fileVisitor = this;
         try {
             Files.walkFileTree(settings.getSrcDirectory(), fileVisitor);
         }catch (IOException e){
@@ -45,14 +45,13 @@ public class FileVisitorImpl implements FileVisitor<Path> {
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
         log.error("pre " + dir.toString());
-
         return FileVisitResult.CONTINUE;
     }
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         log.error("visit " + file.toString());
-        fileHandle.handleFile(file, settings);
+        fileHandleCopy.handleFile(file, settings);
         return FileVisitResult.CONTINUE;
     }
 

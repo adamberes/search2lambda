@@ -24,7 +24,7 @@ import java.nio.file.Path;
 @Data
 @RequiredArgsConstructor
 @Service
-public class FileHandle {
+public class FileHandleCopy {
     @Autowired
     ParseFile parseFile;
     @Autowired

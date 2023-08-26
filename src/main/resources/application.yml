@@ -10,3 +10,8 @@ metadata:
   docx: "dcterms:created"
   jpg:  "Exif SubIFD:Date/Time Original"
   nef:  "Exif SubIFD:Date/Time Original"
+
+logging:
+  level:
+    de:
+      beres: INFO

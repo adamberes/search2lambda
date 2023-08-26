@@ -1,24 +1,25 @@
 package de.beres.search;
 
+import de.beres.search.operations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Slf4j
-@RestController
+@Service
 public class ServiceDir {
 
     @Autowired
     FileVisitorImpl fileVisitor;
+    @Autowired
+    FileVisitorImplCopy fileVisitorImplCopy;
 
-    public void work() {
-        Path startDir = Paths.get("C:\\bin");
-            fileVisitor.callVisitor(startDir);
+    public void work(Settings settings) {
+        if(settings.getOperation().equals(Operation.COPY))
+            fileVisitorImplCopy.callVisitor(settings);
+        else if(settings.getOperation().equals(Operation.MOVE))
+            fileVisitor.callVisitor(settings);
+        else if(settings.getOperation().equals(Operation.INDEX))
+            fileVisitor.callVisitor(settings);
     }
 }
