@@ -1,5 +1,6 @@
 package de.beres.search;
 
+import de.beres.search.operations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,7 +24,7 @@ class ControllerDir {
                 .docx(Boolean.valueOf(true)).pdf(Boolean.valueOf(false))
                 .jpg(Boolean.valueOf(false)).nef(Boolean.valueOf(false))
                 .srcDirectory(startDir)
-                .operation(Integer.valueOf(1))// 1 copy; 2 mirror; 3 index;
+                .operation(Operation.INDEX)// 1 copy; 2 mirror; 3 index;
                 .contentSearchResult(new ContentSearchResult())
                 .destDirectory(targetDir).build();
 

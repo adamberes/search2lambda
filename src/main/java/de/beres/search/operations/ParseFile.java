@@ -41,7 +41,7 @@ public class ParseFile {
         log.debug(date);
         return handler.toString();
     }
-    public String getKeyValueExtractContentUsingParser(String fileName, String key, Integer operation)
+    public String getKeyValueExtractContentUsingParser(String fileName, String key, Operation operation)
             throws IOException, TikaException, SAXException {
         String date="";
         InputStream stream = new FileInputStream(fileName);
@@ -52,12 +52,12 @@ public class ParseFile {
 
         parser.parse(stream, handler, metadata, context);
 
-        if(operation.intValue()==3) {
+        if(Operation.INDEX.compareTo(operation)==0) {
             String[] words = handler.toString().split("[\t\n ]+");
             for (String word : words)
                 wordTransitiv2Directory.addWord(word, fileName);
         }
-        if(operation.intValue()==1) {
+        if(Operation.COPY.compareTo(operation)==0) {
             date = metadata.get(key);
             log.debug(date);
         }
