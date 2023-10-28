@@ -13,6 +13,8 @@ import java.nio.file.Path;
 @Data
 @Builder
 public class Settings {
+    private Boolean js;
+    private Boolean jsx;
     private Boolean pdf;
     private Boolean docx;
     private Boolean nef;

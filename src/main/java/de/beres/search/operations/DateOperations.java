@@ -26,13 +26,15 @@ public class DateOperations {
     @SneakyThrows(ParseException.class)
     void convertFromMetadata(String dateMetaFormat){
         DateFormat format;
+        if(dateMetaFormat.length() >=23){
+            dateMetaFormat = dateMetaFormat.substring(0, 19) + 'Z';}
         if(! dateMetaFormat.contains("TZ"))
             format = new SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ss'Z'", Locale.ENGLISH);
         else
             format = new SimpleDateFormat("yyyy:MM:dd kk:mm:ss", Locale.ENGLISH);
-            date = format.parse(dateMetaFormat);
-            convertDateTo2AtomicElements();
-            convertAtomicElements2FormattedResulst();
+        date = format.parse(dateMetaFormat);
+        convertDateTo2AtomicElements();
+        convertAtomicElements2FormattedResulst();
     }
     void convertDateTo2AtomicElements(){
         DateFormat df = DateFormat.getDateInstance();

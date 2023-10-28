@@ -16,10 +16,12 @@ import org.springframework.stereotype.Component;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 
 @Slf4j
 @AllArgsConstructor
@@ -46,16 +48,29 @@ public class ParseFile {
         String date="";
         InputStream stream = new FileInputStream(fileName);
         Parser parser = new AutoDetectParser();
-        ContentHandler handler = new BodyContentHandler();
+        ContentHandler handler0 = new BodyContentHandler();
         Metadata metadata = new Metadata();
         ParseContext context = new ParseContext();
 
-        parser.parse(stream, handler, metadata, context);
+        StringWriter any = new StringWriter();
+        BodyContentHandler handler2 = new BodyContentHandler(any);
+        if(stream.available()>0)
+            parser.parse(stream, handler2, metadata, context);
 
         if(Operation.INDEX.compareTo(operation)==0) {
-            String[] words = handler.toString().split("[\t\n ]+");
+            String[] words = handler2.toString().split("[\t\n ]+");
             for (String word : words)
                 wordTransitiv2Directory.addWord(word, fileName);
+        }
+        if(Operation.INDEX.compareTo(operation)==0) {
+            date = metadata.get(key);
+            if(date==null){
+                Path path = Paths.get(fileName);
+                BasicFileAttributes fileAttributes = Files.readAttributes(path, BasicFileAttributes.class);
+                FileTime fileTime = fileAttributes.creationTime();
+                date = fileTime.toString();
+            }
+            log.debug(date);
         }
         if(Operation.COPY.compareTo(operation)==0) {
             date = metadata.get(key);
