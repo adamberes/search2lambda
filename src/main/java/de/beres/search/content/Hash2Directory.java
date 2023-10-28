@@ -1,5 +1,6 @@
 package de.beres.search.content;
 
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.Bag;
 import org.apache.commons.collections4.bag.HashBag;
@@ -7,9 +8,11 @@ import org.apache.commons.collections4.bag.HashBag;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
+@Data
 public class Hash2Directory extends String2Hash{
     Bag<String>  directorys;
     HashMap<String,Bag<String>> hash2Directory;
@@ -44,23 +47,8 @@ public class Hash2Directory extends String2Hash{
             }
         }
     }
-    public void logAll(){
-        try {
-            FileWriter fileWriter = new FileWriter("word-hash2Directory.txt");
-            for(Map.Entry<String, Bag<String>> bagEntry: hash2Directory.entrySet()){
-                String s = "HashCode from Word: " + bagEntry.getKey();
-                log.info(s);
-                fileWriter.write(s + "\n");
-                for(String entry : bagEntry.getValue()){
-                    String s1 = "File: " + entry;
-                    fileWriter.write(s1 + "\n");
-                }
-            }
-            fileWriter.flush();
-            fileWriter.close();
-        }catch(
-                IOException e){
-            log.error(e.getMessage());
-        }
+
+    public Bag<String> getDirList(String keyFromWord) {
+        return hash2Directory.get(keyFromWord);
     }
 }

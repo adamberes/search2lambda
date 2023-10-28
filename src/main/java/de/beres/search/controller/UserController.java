@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 @RequestMapping(value = "api/")
 @RequiredArgsConstructor
 public class UserController {
+
     @Autowired
     private final UserService userService;
 

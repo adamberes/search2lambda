@@ -65,7 +65,12 @@ public class FileHandleCopy {
                 case "docx"://2022-10-17T05:49:00Z
                     if(settings.getDocx().booleanValue()) {
                         date = parseFile.getKeyValueExtractContentUsingParser(file.toString(), configurationProps.getDocx(), settings.getOperation());
-                        date = parseFile.getKeyValueUsingDetector(file.toString(), configurationProps.getJpg());
+                        //date = parseFile.getKeyValueUsingDetector(file.toString(), configurationProps.getJpg());
+                        dateOperations.convertFromMetadata(date);
+                    }
+                case "js"://2022-10-17T05:49:00Z
+                    if(settings.getJs().booleanValue()) {
+                        date = parseFile.getKeyValueExtractContentUsingParser(file.toString(), configurationProps.getJs(), settings.getOperation());
                         dateOperations.convertFromMetadata(date);
                     }
                     break;

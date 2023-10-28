@@ -13,6 +13,8 @@ import java.nio.file.Path;
 @ConfigurationProperties(prefix = "metadata")
 @Configuration
 public class ConfigurationProps {
+    private String js;
+    private String jsx;
     private String pdf;
     private String docx;
     private String jpg;

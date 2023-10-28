@@ -3,9 +3,11 @@ spring:
     url: r2dbc:mariadb://localhost:3306/test01
     username: beres
     password: beres
-debug: true
+#debug: true
 
 metadata:
+  js:  "dcterms:created"
+  jsx:  "dcterms:created"
   pdf:  "dcterms:created"
   docx: "dcterms:created"
   jpg:  "Exif SubIFD:Date/Time Original"
