@@ -1,0 +1,47 @@
+{
+  "groups": [
+    {
+      "name": "metadata",
+      "type": "de.beres.search.ConfigurationProps",
+      "sourceType": "de.beres.search.ConfigurationProps"
+    }
+  ],
+  "properties": [
+    {
+      "name": "metadata.docx",
+      "type": "java.lang.String",
+      "sourceType": "de.beres.search.ConfigurationProps"
+    },
+    {
+      "name": "metadata.jpg",
+      "type": "java.lang.String",
+      "sourceType": "de.beres.search.ConfigurationProps"
+    },
+    {
+      "name": "metadata.js",
+      "type": "java.lang.String",
+      "sourceType": "de.beres.search.ConfigurationProps"
+    },
+    {
+      "name": "metadata.jsx",
+      "type": "java.lang.String",
+      "sourceType": "de.beres.search.ConfigurationProps"
+    },
+    {
+      "name": "metadata.nef",
+      "type": "java.lang.String",
+      "sourceType": "de.beres.search.ConfigurationProps"
+    },
+    {
+      "name": "metadata.pdf",
+      "type": "java.lang.String",
+      "sourceType": "de.beres.search.ConfigurationProps"
+    },
+    {
+      "name": "metadata.target-dir",
+      "type": "java.nio.file.Path",
+      "sourceType": "de.beres.search.ConfigurationProps"
+    }
+  ],
+  "hints": []
+}
