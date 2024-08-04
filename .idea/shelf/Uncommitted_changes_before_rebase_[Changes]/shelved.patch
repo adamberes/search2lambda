@@ -1,0 +1,985 @@
+Index: src/main/java/de/beres/search/ControllerDir.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package de.beres.search;\r\n\r\nimport de.beres.search.operations.Operation;\r\nimport org.springframework.beans.factory.annotation.Autowired;\r\nimport org.springframework.web.bind.annotation.GetMapping;\r\nimport org.springframework.web.bind.annotation.RestController;\r\n\r\nimport java.io.IOException;\r\nimport java.nio.file.Path;\r\nimport java.nio.file.Paths;\r\n\r\n@RestController\r\nclass ControllerDir {\r\n\r\n    @Autowired\r\n    ServiceDir serviceDir;\r\n    Settings settings;\r\n\r\n    @GetMapping(\"/do\")\r\n    String work() throws IOException {\r\n        Path startDir  = Paths.get(\"C:\\\\bin\\\\1Stick2023\");\r\n        Path targetDir = Paths.get(\"C:\\\\bin\\\\BilderZiel\");\r\n        settings = Settings.builder()\r\n                .docx(Boolean.valueOf(true)).pdf(Boolean.valueOf(false))\r\n                .jpg(Boolean.valueOf(false)).nef(Boolean.valueOf(false))\r\n                .srcDirectory(startDir)\r\n                .operation(Operation.INDEX)// 1 copy; 2 mirror; 3 index;\r\n                .contentSearchResult(new ContentSearchResult())\r\n                .destDirectory(targetDir).build();\r\n\r\n        serviceDir.work(settings);\r\n        settings.getContentSearchResult().getWordTransitiv2Directory().word2Hash.logAll();\r\n        settings.getContentSearchResult().getWordTransitiv2Directory().hash2Directory.logAll();\r\n        return \"OK\";\r\n    }\r\n\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/de/beres/search/ControllerDir.java b/src/main/java/de/beres/search/ControllerDir.java
+--- a/src/main/java/de/beres/search/ControllerDir.java	(revision 350b788ac933996c6a892bfbcde939dd326fd186)
++++ b/src/main/java/de/beres/search/ControllerDir.java	(date 1719314772229)
+@@ -1,37 +1,107 @@
+ package de.beres.search;
+ 
++import de.beres.search.content.WordTransitiv2Directory;
+ import de.beres.search.operations.Operation;
++import lombok.NonNull;
++import org.apache.commons.collections4.Bag;
+ import org.springframework.beans.factory.annotation.Autowired;
+-import org.springframework.web.bind.annotation.GetMapping;
+-import org.springframework.web.bind.annotation.RestController;
++import org.springframework.web.bind.annotation.*;
+ 
+ import java.io.IOException;
+ import java.nio.file.Path;
+ import java.nio.file.Paths;
++import java.util.ArrayList;
++import java.util.Iterator;
++import java.util.List;
++import java.util.stream.Collectors;
++import java.util.stream.IntStream;
++import java.util.stream.Stream;
+ 
++@CrossOrigin(origins = "http://localhost:8081")
+ @RestController
+-class ControllerDir {
++public class ControllerDir {
+ 
+     @Autowired
+     ServiceDir serviceDir;
++    @Autowired
++    WordTransitiv2Directory wordTransitiv2Directory;
++    @Autowired
++    ContentSearchResult contentSearchResult;
+     Settings settings;
+ 
+-    @GetMapping("/do")
+-    String work() throws IOException {
++//    @GetMapping("/abcd")
++//    String work() throws IOException {
++//        //Path startDir  = Paths.get("F:\\Saved2023");
++//        Path startDir  = Paths.get("C:\\bin\\1Stick2023-2");
++//        //Path startDir  = Paths.get("C:\\bin\\ProjektReact\\React2");
++//
++//
++//        Path targetDir = Paths.get("C:\\bin\\BilderZiel");
++//        settings = Settings.builder()
++//                .js(Boolean.valueOf(true)).jsx(Boolean.valueOf(true))
++//                .docx(Boolean.valueOf(true)).pdf(Boolean.valueOf(true))
++//                .jpg(Boolean.valueOf(false)).nef(Boolean.valueOf(false))
++//                .srcDirectory(startDir)
++//                .operation(Operation.INDEX)// 1 copy; 2 mirror; 3 index;
++//                .contentSearchResult(new ContentSearchResult())
++//                .destDirectory(targetDir).build();
++//
++//        serviceDir.work(settings);
++//        settings.getContentSearchResult().getWordTransitiv2Directory().word2Hash.logAll();
++//        settings.getContentSearchResult().getWordTransitiv2Directory().hash2Directory.logAll();
++//        return "OK";
++//    }
++    @PostMapping(value = "/do")
++    String work2(@RequestBody Data data) throws IOException {
++
++        System.out.println(data.getSrcDir());
++        System.out.println(data.getDstDir());
++        System.out.println(data.getMode());
++        //Path startDir  = Paths.get("C:\\bin\\1Stick2023-2");
++        //Path startDir  = Paths.get("C:\\bin\\1Stick2023-1");
+         Path startDir  = Paths.get("C:\\bin\\1Stick2023");
++
+         Path targetDir = Paths.get("C:\\bin\\BilderZiel");
+         settings = Settings.builder()
+-                .docx(Boolean.valueOf(true)).pdf(Boolean.valueOf(false))
++                .js(Boolean.valueOf(true)).jsx(Boolean.valueOf(true))
++                .docx(Boolean.valueOf(true)).pdf(Boolean.valueOf(true))
+                 .jpg(Boolean.valueOf(false)).nef(Boolean.valueOf(false))
+                 .srcDirectory(startDir)
+                 .operation(Operation.INDEX)// 1 copy; 2 mirror; 3 index;
+-                .contentSearchResult(new ContentSearchResult())
++                .contentSearchResult(contentSearchResult)
+                 .destDirectory(targetDir).build();
+ 
+         serviceDir.work(settings);
+-        settings.getContentSearchResult().getWordTransitiv2Directory().word2Hash.logAll();
+-        settings.getContentSearchResult().getWordTransitiv2Directory().hash2Directory.logAll();
+-        return "OK";
++        settings.getContentSearchResult().getWordTransitiv2Directory().writeWord2File("word.txt");
++        settings.getContentSearchResult().getWordTransitiv2Directory().writeFileName2File("word-hash2Directory.txt");
++        return data.getSrcDir();
+     }
++    @PostMapping("/list")
++    List<String> getDirList(@RequestBody SearchText searchText){
++        List<String> stringList = new ArrayList<>();
++        System.out.println(searchText.getSearchText());
+ 
++        //List<String> returnvalue = Stream.iterate(1, i -> i + 1).limit(10).map(i -> i + " " + searchText.getSearchText() + "<br/>").collect(Collectors.toList());
++        Bag<String> dirlist = wordTransitiv2Directory.getDirList4Word(searchText.getSearchText());
++        if(dirlist == null) {
++            stringList.add("Keine Ergebnisse0");
++            return stringList;
++        }
++        for(Iterator i =  dirlist.iterator();   i.hasNext();){
++            String s = i.next() + "\n";
++            stringList.add(s);
++        }
++        if(stringList.size()==0)
++            stringList.add("Keine Ergebnisse1");
++        return stringList;
++    }
++    @GetMapping("/read")
++    String getDirListRead(){
++        settings = Settings.builder()
++                .contentSearchResult(contentSearchResult).build();
++        settings.getContentSearchResult().getWordTransitiv2Directory().readWordFromFile("word.txt");
++        settings.getContentSearchResult().getWordTransitiv2Directory().readFileNameFromFile("word-hash2Directory.txt");
++
++        return "Done";
++    }
+ }
+Index: src/main/java/de/beres/search/SearchApplication.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package de.beres.search;\r\n\r\nimport org.springframework.boot.SpringApplication;\r\nimport org.springframework.boot.autoconfigure.SpringBootApplication;\r\n\r\n//@EnableConfigurationProperties(ConfigurationProps.class)\r\n@SpringBootApplication\r\npublic class SearchApplication {\r\n\r\n\tpublic static void main(String[] args) {\r\n\t\tSpringApplication.run(SearchApplication.class, args);\r\n\t}\r\n\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/de/beres/search/SearchApplication.java b/src/main/java/de/beres/search/SearchApplication.java
+--- a/src/main/java/de/beres/search/SearchApplication.java	(revision 350b788ac933996c6a892bfbcde939dd326fd186)
++++ b/src/main/java/de/beres/search/SearchApplication.java	(date 1719088073337)
+@@ -2,13 +2,27 @@
+ 
+ import org.springframework.boot.SpringApplication;
+ import org.springframework.boot.autoconfigure.SpringBootApplication;
++import org.springframework.context.annotation.Bean;
++import org.springframework.web.servlet.config.annotation.CorsRegistry;
++import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+ 
++
++//https://helptechcommunity.wordpress.com/2020/01/28/websocket-chat-application-using-spring-boot-and-react-js/
+ //@EnableConfigurationProperties(ConfigurationProps.class)
+ @SpringBootApplication
+ public class SearchApplication {
+ 
+-	public static void main(String[] args) {
+-		SpringApplication.run(SearchApplication.class, args);
+-	}
++    public static void main(String[] args) {
++        SpringApplication.run(SearchApplication.class, args);
++    }
+ 
++    @Bean
++    public WebMvcConfigurer corsConfigurer() {
++        return new WebMvcConfigurer() {
++            @Override
++            public void addCorsMappings(CorsRegistry registry) {
++                registry.addMapping("/**").allowCredentials(true).allowedOrigins("http://localhost:3000").allowedMethods("*");
++            }
++        };
++    }
+ }
+Index: src/main/java/de/beres/search/content/WordTransitiv2Directory.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package de.beres.search.content;\r\n\r\n\r\nimport lombok.AllArgsConstructor;\r\nimport lombok.RequiredArgsConstructor;\r\nimport org.springframework.stereotype.Component;\r\n\r\n@AllArgsConstructor\r\n@RequiredArgsConstructor\r\n@Component\r\npublic class WordTransitiv2Directory {\r\n    //word --> hash --> filename\r\n    public Word2Hash word2Hash = new Word2Hash();\r\n    public Hash2Directory hash2Directory = new Hash2Directory();\r\n\r\n    public void addWord(String string, String fileName){\r\n        String hashCode = word2Hash.addWord(string);\r\n        System.out.println(\"Word \" + string);\r\n        if(string.contentEquals(\"+49\"))\r\n            string = string;\r\n        hash2Directory.addDirectory(hashCode, fileName);\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/de/beres/search/content/WordTransitiv2Directory.java b/src/main/java/de/beres/search/content/WordTransitiv2Directory.java
+--- a/src/main/java/de/beres/search/content/WordTransitiv2Directory.java	(revision 350b788ac933996c6a892bfbcde939dd326fd186)
++++ b/src/main/java/de/beres/search/content/WordTransitiv2Directory.java	(date 1719312610676)
+@@ -1,10 +1,21 @@
+ package de.beres.search.content;
+ 
+ 
++import com.google.common.hash.HashCode;
+ import lombok.AllArgsConstructor;
+ import lombok.RequiredArgsConstructor;
++import lombok.extern.slf4j.Slf4j;
++import org.apache.commons.collections4.Bag;
++import org.apache.commons.collections4.bag.HashBag;
+ import org.springframework.stereotype.Component;
+ 
++import java.io.BufferedReader;
++import java.io.FileReader;
++import java.io.FileWriter;
++import java.io.IOException;
++import java.util.*;
++
++@Slf4j
+ @AllArgsConstructor
+ @RequiredArgsConstructor
+ @Component
+@@ -14,10 +25,115 @@
+     public Hash2Directory hash2Directory = new Hash2Directory();
+ 
+     public void addWord(String string, String fileName){
+-        String hashCode = word2Hash.addWord(string);
+-        System.out.println("Word " + string);
++        String hashCode = word2Hash.generateHashAddWord(string);
++        log.info("Word [" + string + "] hash [" + hashCode + "] file [" + fileName + "]" + string);
+         if(string.contentEquals("+49"))
+             string = string;
+-        hash2Directory.addDirectory(hashCode, fileName);
++        if(hashCode.length()!=0)
++            hash2Directory.addDirectory(hashCode, fileName);
+     }
++    public Bag<String> getDirList4Word(String string){
++        String keyFromWord = word2Hash.getWord().get(string);
++        Bag<String> stringList;
++        stringList = hash2Directory.getDirList(keyFromWord);
++        return stringList;
++    }
++    public void writeWord2File(String fileName){
++        try (FileWriter fileWriter = new FileWriter(fileName)){
++        for (Map.Entry<String, String> entry : word2Hash.getWord().entrySet()) {
++            String s = "Key: " + entry.getKey() + " Value: " + entry.getValue();
++            fileWriter.write(s + "\n");
++        }
++        fileWriter.flush();
++        fileWriter.close();
++    }catch(
++    IOException e){
++        log.error(e.getMessage());
++    }
++}
++    public void readWordFromFile(String fileName) {
++        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
++            for (String line; (line = bufferedReader.readLine()) != null; ) {
++                List<String> splitList = Arrays.asList(line.split(" "));
++                String key = splitList.get(1);
++                String value = splitList.get(3);
++                word2Hash.getWord().put(splitList.get(1), splitList.get(3));
++            }
++        } catch (
++                IOException e) {
++            log.error(e.getMessage());
++        }
++    }
++    public void readFileNameFromFile(String fileName) {
++        Bag<String> dirNew = null;
++        String hashCode = null;
++        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
++            boolean present = false;
++            for (String line; (line = bufferedReader.readLine()) != null; ) {
++                if(line.startsWith("HashCode")){
++                    hash2Directory.hash2Directory.put(hashCode,dirNew);
++                    present = true;
++                    dirNew = null;
++                }
++                if(present){
++                    dirNew = null;
++                    present = false;
++                }
++                if(line.startsWith("HashCode from Word: ")){
++                    hashCode = line.substring("HashCode from Word: ".length());
++                }
++                if(line.startsWith("File: ")){
++                    line = line.substring("File: ".length());
++                    if(dirNew==null){
++                        dirNew = new HashBag<>();
++                        dirNew.add(line);
++                    }else{
++                        dirNew.add(line);
++                    }
++                }
++            }
++            int i = 0;
++            i = 9;
++            } catch (
++                IOException e) {
++            log.error(e.getMessage());
++        }
++    }
++    public void writeFileName2File(String fileName) {
++        try (FileWriter fileWriter = new FileWriter(fileName)){
++            for (Map.Entry<String, Bag<String>> bagEntry : hash2Directory.getHash2Directory().entrySet()) {
++                String s = "HashCode from Word: " + bagEntry.getKey();
++                log.info(s);
++                fileWriter.write(s + "\n");
++                try {
++                    for (String entry : bagEntry.getValue()) {
++                        String s1 = "File: " + entry;
++                        fileWriter.write(s1 + "\n");
++                    }
++                } catch (NullPointerException e) {
++                    log.error(e.getMessage());
++                }
++            }
++            fileWriter.flush();
++            fileWriter.close();
++        } catch ( IOException e) {
++            log.error(e.getMessage());
++        }
++    }
++    List<String> getWordList(String searchFor){
++        List<String> resultList = new ArrayList<>();
++
++        Bag<String> dirlist = getDirList4Word(searchFor);
++        if(dirlist == null) {
++            resultList.add("Keine Ergebnisse0");
++            return resultList;
++        }
++        for(Iterator i = dirlist.iterator(); i.hasNext();){
++            String s = i.next() + "\n";
++            resultList.add(s);
++        }
++        if(resultList.size()==0)
++            resultList.add("Keine Ergebnisse1");
++        return resultList;
++    }
+ }
+Index: src/main/java/de/beres/search/content/Hash2Directory.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package de.beres.search.content;\r\n\r\nimport lombok.extern.slf4j.Slf4j;\r\nimport org.apache.commons.collections4.Bag;\r\nimport org.apache.commons.collections4.bag.HashBag;\r\n\r\nimport java.io.FileWriter;\r\nimport java.io.IOException;\r\nimport java.util.HashMap;\r\nimport java.util.Map;\r\n\r\n@Slf4j\r\npublic class Hash2Directory extends String2Hash{\r\n    Bag<String>  directorys;\r\n    HashMap<String,Bag<String>> hash2Directory;\r\n\r\n    public Hash2Directory() {\r\n        this.hash2Directory =  new HashMap<>();\r\n    }\r\n\r\n    public void addDirectory(String hashCode, String fileName) {\r\n        Bag<String> dir = hash2Directory.get(hashCode);\r\n        Bag<String> dirNew = null;\r\n        boolean isPresent=false;\r\n\r\n        if(hashCode.equals(\"90d6a99fcec125ef6b61949aad4db95db6a33fa5b72ce7ea0b528ad3aaca2e8d\"))\r\n            hashCode = hashCode;\r\n        if(dir == null){\r\n            dirNew = new HashBag<>();\r\n            dirNew.add(fileName);\r\n            hash2Directory.put(hashCode,dirNew);\r\n        }else{\r\n            String fileNameHash = this.generateHashString(fileName);\r\n            System.out.println(\"FileName \" + fileName);\r\n            for(String d : dir) {\r\n                if (this.generateHashString(d).equals(fileNameHash)) {\r\n                    isPresent = true;\r\n                }\r\n            }\r\n            if(!isPresent) {\r\n                // hash from fileName ,  then walk over dir and build hash codes and compare with fileNme , add only if not equal\r\n                dir.add(fileName);\r\n                hash2Directory.put(hashCode, dir);\r\n            }\r\n        }\r\n    }\r\n    public void logAll(){\r\n        try {\r\n            FileWriter fileWriter = new FileWriter(\"word-hash2Directory.txt\");\r\n            for(Map.Entry<String, Bag<String>> bagEntry: hash2Directory.entrySet()){\r\n                String s = \"HashCode from Word: \" + bagEntry.getKey();\r\n                log.info(s);\r\n                fileWriter.write(s + \"\\n\");\r\n                for(String entry : bagEntry.getValue()){\r\n                    String s1 = \"File: \" + entry;\r\n                    fileWriter.write(s1 + \"\\n\");\r\n                }\r\n            }\r\n            fileWriter.flush();\r\n            fileWriter.close();\r\n        }catch(\r\n                IOException e){\r\n            log.error(e.getMessage());\r\n        }\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/de/beres/search/content/Hash2Directory.java b/src/main/java/de/beres/search/content/Hash2Directory.java
+--- a/src/main/java/de/beres/search/content/Hash2Directory.java	(revision 350b788ac933996c6a892bfbcde939dd326fd186)
++++ b/src/main/java/de/beres/search/content/Hash2Directory.java	(date 1719173214198)
+@@ -1,5 +1,6 @@
+ package de.beres.search.content;
+ 
++import lombok.Data;
+ import lombok.extern.slf4j.Slf4j;
+ import org.apache.commons.collections4.Bag;
+ import org.apache.commons.collections4.bag.HashBag;
+@@ -7,9 +8,11 @@
+ import java.io.FileWriter;
+ import java.io.IOException;
+ import java.util.HashMap;
++import java.util.List;
+ import java.util.Map;
+ 
+ @Slf4j
++@Data
+ public class Hash2Directory extends String2Hash{
+     Bag<String>  directorys;
+     HashMap<String,Bag<String>> hash2Directory;
+@@ -44,23 +47,8 @@
+             }
+         }
+     }
+-    public void logAll(){
+-        try {
+-            FileWriter fileWriter = new FileWriter("word-hash2Directory.txt");
+-            for(Map.Entry<String, Bag<String>> bagEntry: hash2Directory.entrySet()){
+-                String s = "HashCode from Word: " + bagEntry.getKey();
+-                log.info(s);
+-                fileWriter.write(s + "\n");
+-                for(String entry : bagEntry.getValue()){
+-                    String s1 = "File: " + entry;
+-                    fileWriter.write(s1 + "\n");
+-                }
+-            }
+-            fileWriter.flush();
+-            fileWriter.close();
+-        }catch(
+-                IOException e){
+-            log.error(e.getMessage());
+-        }
++
++    public Bag<String> getDirList(String keyFromWord) {
++        return hash2Directory.get(keyFromWord);
+     }
+ }
+Index: pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n\txsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd\">\r\n\t<modelVersion>4.0.0</modelVersion>\r\n\t<parent>\r\n\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t<artifactId>spring-boot-starter-parent</artifactId>\r\n\t\t<version>2.7.9</version>\r\n\t\t<relativePath/> <!-- lookup parent from repository -->\r\n\t</parent>\r\n\t<groupId>de.beres</groupId>\r\n\t<artifactId>search</artifactId>\r\n\t<version>0.0.1-SNAPSHOT</version>\r\n\t<name>search</name>\r\n\t<description>Search with filter</description>\r\n\t<properties>\r\n\t\t<java.version>17</java.version>\r\n\t</properties>\r\n\t<dependencies>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-web</artifactId>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.data</groupId>\r\n\t\t\t<artifactId>spring-data-r2dbc</artifactId>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-data-jpa</artifactId>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.mariadb</groupId>\r\n\t\t\t<artifactId>r2dbc-mariadb</artifactId>\r\n\t\t\t<version>0.8.2-alpha2</version>\r\n\t\t\t<scope>runtime</scope>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-data-r2dbc</artifactId>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>io.projectreactor</groupId>\r\n\t\t\t<artifactId>reactor-test</artifactId>\r\n\t\t\t<scope>test</scope>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>io.projectreactor</groupId>\r\n\t\t\t<artifactId>reactor-core</artifactId>\r\n\t\t</dependency>\r\n\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-devtools</artifactId>\r\n\t\t\t<scope>runtime</scope>\r\n\t\t\t<optional>true</optional>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.projectlombok</groupId>\r\n\t\t\t<artifactId>lombok</artifactId>\r\n\t\t\t<optional>true</optional>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-starter-test</artifactId>\r\n\t\t\t<scope>test</scope>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.apache.tika</groupId>\r\n\t\t\t<artifactId>tika-core</artifactId>\r\n\t\t\t<version>2.8.0</version>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.apache.tika</groupId>\r\n\t\t\t<artifactId>tika-parsers-standard-package</artifactId>\r\n\t\t\t<version>2.8.0</version>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t<artifactId>spring-boot-configuration-processor</artifactId>\r\n\t\t\t<optional>true</optional>\r\n\t\t</dependency>\r\n\t\t<dependency>\r\n\t\t\t<groupId>com.google.guava</groupId>\r\n\t\t\t<artifactId>guava</artifactId>\r\n\t\t\t<version>32.1.2-jre</version>\r\n\t\t</dependency>\r\n\t</dependencies>\r\n\r\n\t<build>\r\n\t\t<plugins>\r\n\t\t\t<plugin>\r\n\t\t\t\t<groupId>org.springframework.boot</groupId>\r\n\t\t\t\t<artifactId>spring-boot-maven-plugin</artifactId>\r\n\t\t\t\t<configuration>\r\n\t\t\t\t\t<excludes>\r\n\t\t\t\t\t\t<exclude>\r\n\t\t\t\t\t\t\t<groupId>org.projectlombok</groupId>\r\n\t\t\t\t\t\t\t<artifactId>lombok</artifactId>\r\n\t\t\t\t\t\t</exclude>\r\n\t\t\t\t\t</excludes>\r\n\t\t\t\t</configuration>\r\n\t\t\t</plugin>\r\n\t\t</plugins>\r\n\t</build>\r\n\r\n</project>\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/pom.xml b/pom.xml
+--- a/pom.xml	(revision 350b788ac933996c6a892bfbcde939dd326fd186)
++++ b/pom.xml	(date 1722803692168)
+@@ -15,6 +15,8 @@
+ 	<description>Search with filter</description>
+ 	<properties>
+ 		<java.version>17</java.version>
++		<springboot2.aws.version>1.9.4</springboot2.aws.version>
++		<maven-shade-plugin-version>3.6.0</maven-shade-plugin-version>
+ 	</properties>
+ 	<dependencies>
+ 		<dependency>
+@@ -84,22 +86,54 @@
+ 			<groupId>com.google.guava</groupId>
+ 			<artifactId>guava</artifactId>
+ 			<version>32.1.2-jre</version>
++		</dependency>
++		<dependency>
++			<groupId>org.springframework.boot</groupId>
++			<artifactId>spring-boot-starter-websocket</artifactId>
++		</dependency>
++		<dependency>
++			<groupId>com.amazonaws.serverless</groupId>
++			<artifactId>aws-serverless-java-container-springboot2</artifactId>
++			<version>${springboot2.aws.version}</version>
+ 		</dependency>
+ 	</dependencies>
+ 
+ 	<build>
+ 		<plugins>
++<!--			<plugin>-->
++<!--				<groupId>org.springframework.boot</groupId>-->
++<!--				<artifactId>spring-boot-maven-plugin</artifactId>-->
++<!--				<configuration>-->
++<!--					<excludes>-->
++<!--						<exclude>-->
++<!--							<groupId>org.projectlombok</groupId>-->
++<!--							<artifactId>lombok</artifactId>-->
++<!--						</exclude>-->
++<!--					</excludes>-->
++<!--				</configuration>-->
++<!--			</plugin>-->
+ 			<plugin>
+-				<groupId>org.springframework.boot</groupId>
+-				<artifactId>spring-boot-maven-plugin</artifactId>
++				<groupId>org.apache.maven.plugins</groupId>
++				<artifactId>maven-shade-plugin</artifactId>
++				<version>${maven-shade-plugin-version}</version>
+ 				<configuration>
+-					<excludes>
+-						<exclude>
+-							<groupId>org.projectlombok</groupId>
+-							<artifactId>lombok</artifactId>
+-						</exclude>
+-					</excludes>
+-				</configuration>
++					<createDependencyReducedPom>false</createDependencyReducedPom>
++				</configuration>
++				<executions>
++					<execution>
++						<phase>package</phase>
++						<goals>
++							<goal>shade</goal>
++						</goals>
++						<configuration>
++							<artifactSet>
++								<excludes>
++									<exclude>org.apache.tomcat.embed:*</exclude>
++								</excludes>
++							</artifactSet>
++						</configuration>
++					</execution>
++				</executions>
+ 			</plugin>
+ 		</plugins>
+ 	</build>
+Index: src/main/java/de/beres/search/controller/UserController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package de.beres.search.controller;\r\n\r\nimport de.beres.search.entities.User;\r\nimport de.beres.search.service.UserService;\r\nimport lombok.RequiredArgsConstructor;\r\nimport lombok.extern.slf4j.Slf4j;\r\nimport org.springframework.beans.factory.annotation.Autowired;\r\nimport org.springframework.web.bind.annotation.CrossOrigin;\r\nimport org.springframework.web.bind.annotation.GetMapping;\r\nimport org.springframework.web.bind.annotation.RequestMapping;\r\nimport org.springframework.web.bind.annotation.RestController;\r\nimport reactor.core.publisher.Flux;\r\n\r\nimport java.util.concurrent.TimeUnit;\r\n\r\n@CrossOrigin(origins = \"http://localhost:8081\")\r\n@RestController\r\n@Slf4j\r\n@RequestMapping(value = \"api/\")\r\n@RequiredArgsConstructor\r\npublic class UserController {\r\n    @Autowired\r\n    private final UserService userService;\r\n\r\n    @GetMapping(\"users\")\r\n    public Flux<User> getUsers() throws InterruptedException{\r\n        long start = System.currentTimeMillis();\r\n        Flux<User> userFlux = userService.getUser();\r\n        long end = System.currentTimeMillis();\r\n        Long time = Long.valueOf(end-start);\r\n        log.info(\"time: \" + Long.valueOf(time));\r\n        return this.userService.getUser();\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/de/beres/search/controller/UserController.java b/src/main/java/de/beres/search/controller/UserController.java
+--- a/src/main/java/de/beres/search/controller/UserController.java	(revision 350b788ac933996c6a892bfbcde939dd326fd186)
++++ b/src/main/java/de/beres/search/controller/UserController.java	(date 1718302889322)
+@@ -19,6 +19,7 @@
+ @RequestMapping(value = "api/")
+ @RequiredArgsConstructor
+ public class UserController {
++
+     @Autowired
+     private final UserService userService;
+ 
+Index: src/main/resources/application.yml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>spring:\r\n  r2dbc:\r\n    url: r2dbc:mariadb://localhost:3306/test01\r\n    username: beres\r\n    password: beres\r\ndebug: true\r\n\r\nmetadata:\r\n  pdf:  \"dcterms:created\"\r\n  docx: \"dcterms:created\"\r\n  jpg:  \"Exif SubIFD:Date/Time Original\"\r\n  nef:  \"Exif SubIFD:Date/Time Original\"\r\n\r\nlogging:\r\n  level:\r\n    de:\r\n      beres: INFO
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/resources/application.yml b/src/main/resources/application.yml
+--- a/src/main/resources/application.yml	(revision 350b788ac933996c6a892bfbcde939dd326fd186)
++++ b/src/main/resources/application.yml	(date 1718871586313)
+@@ -3,9 +3,11 @@
+     url: r2dbc:mariadb://localhost:3306/test01
+     username: beres
+     password: beres
+-debug: true
++#debug: true
+ 
+ metadata:
++  js:  "dcterms:created"
++  jsx:  "dcterms:created"
+   pdf:  "dcterms:created"
+   docx: "dcterms:created"
+   jpg:  "Exif SubIFD:Date/Time Original"
+Index: src/main/java/de/beres/search/operations/ParseFile.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package de.beres.search.operations;\r\n\r\nimport de.beres.search.content.WordTransitiv2Directory;\r\nimport lombok.AllArgsConstructor;\r\nimport lombok.extern.slf4j.Slf4j;\r\nimport org.apache.tika.detect.DefaultDetector;\r\nimport org.apache.tika.detect.Detector;\r\nimport org.apache.tika.exception.TikaException;\r\nimport org.apache.tika.metadata.Metadata;\r\nimport org.apache.tika.mime.MediaType;\r\nimport org.apache.tika.parser.AutoDetectParser;\r\nimport org.apache.tika.parser.ParseContext;\r\nimport org.apache.tika.parser.Parser;\r\nimport org.apache.tika.sax.BodyContentHandler;\r\nimport org.springframework.stereotype.Component;\r\nimport org.xml.sax.ContentHandler;\r\nimport org.xml.sax.SAXException;\r\n\r\nimport java.io.BufferedInputStream;\r\nimport java.io.FileInputStream;\r\nimport java.io.IOException;\r\nimport java.io.InputStream;\r\n\r\n@Slf4j\r\n@AllArgsConstructor\r\n@Component\r\npublic class ParseFile {\r\n\r\n    WordTransitiv2Directory wordTransitiv2Directory;\r\n\r\n    public String extractContentUsingParser(InputStream stream, String key)\r\n            throws IOException, TikaException, SAXException {\r\n\r\n        org.apache.tika.parser.Parser parser = new AutoDetectParser();\r\n        ContentHandler handler = new BodyContentHandler();\r\n        Metadata metadata = new Metadata();\r\n        ParseContext context = new ParseContext();\r\n\r\n        parser.parse(stream, handler, metadata, context);\r\n        String date = metadata.get(key);\r\n        log.debug(date);\r\n        return handler.toString();\r\n    }\r\n    public String getKeyValueExtractContentUsingParser(String fileName, String key, Operation operation)\r\n            throws IOException, TikaException, SAXException {\r\n        String date=\"\";\r\n        InputStream stream = new FileInputStream(fileName);\r\n        Parser parser = new AutoDetectParser();\r\n        ContentHandler handler = new BodyContentHandler();\r\n        Metadata metadata = new Metadata();\r\n        ParseContext context = new ParseContext();\r\n\r\n        parser.parse(stream, handler, metadata, context);\r\n\r\n        if(Operation.INDEX.compareTo(operation)==0) {\r\n            String[] words = handler.toString().split(\"[\\t\\n ]+\");\r\n            for (String word : words)\r\n                wordTransitiv2Directory.addWord(word, fileName);\r\n        }\r\n        if(Operation.COPY.compareTo(operation)==0) {\r\n            date = metadata.get(key);\r\n            log.debug(date);\r\n        }\r\n        return date;\r\n    }\r\n    public static String getKeyValueUsingDetector(String fileName, String key)\r\n            throws IOException {\r\n        //not getting metadata\r\n        BufferedInputStream stream = new BufferedInputStream(new FileInputStream(fileName));\r\n        Detector detector = new DefaultDetector();\r\n        Metadata metadata = new Metadata();\r\n        MediaType mediaType = detector.detect(stream,metadata);\r\n        String date = metadata.get(key);\r\n        log.debug(date);\r\n        return date;\r\n    }\r\n\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/de/beres/search/operations/ParseFile.java b/src/main/java/de/beres/search/operations/ParseFile.java
+--- a/src/main/java/de/beres/search/operations/ParseFile.java	(revision 350b788ac933996c6a892bfbcde939dd326fd186)
++++ b/src/main/java/de/beres/search/operations/ParseFile.java	(date 1718132825103)
+@@ -16,10 +16,12 @@
+ import org.xml.sax.ContentHandler;
+ import org.xml.sax.SAXException;
+ 
+-import java.io.BufferedInputStream;
+-import java.io.FileInputStream;
+-import java.io.IOException;
+-import java.io.InputStream;
++import java.io.*;
++import java.nio.file.Files;
++import java.nio.file.Path;
++import java.nio.file.Paths;
++import java.nio.file.attribute.BasicFileAttributes;
++import java.nio.file.attribute.FileTime;
+ 
+ @Slf4j
+ @AllArgsConstructor
+@@ -46,17 +48,30 @@
+         String date="";
+         InputStream stream = new FileInputStream(fileName);
+         Parser parser = new AutoDetectParser();
+-        ContentHandler handler = new BodyContentHandler();
++        ContentHandler handler0 = new BodyContentHandler();
+         Metadata metadata = new Metadata();
+         ParseContext context = new ParseContext();
+ 
+-        parser.parse(stream, handler, metadata, context);
++        StringWriter any = new StringWriter();
++        BodyContentHandler handler2 = new BodyContentHandler(any);
++        if(stream.available()>0)
++            parser.parse(stream, handler2, metadata, context);
+ 
+         if(Operation.INDEX.compareTo(operation)==0) {
+-            String[] words = handler.toString().split("[\t\n ]+");
++            String[] words = handler2.toString().split("[\t\n ]+");
+             for (String word : words)
+                 wordTransitiv2Directory.addWord(word, fileName);
+         }
++        if(Operation.INDEX.compareTo(operation)==0) {
++            date = metadata.get(key);
++            if(date==null){
++                Path path = Paths.get(fileName);
++                BasicFileAttributes fileAttributes = Files.readAttributes(path, BasicFileAttributes.class);
++                FileTime fileTime = fileAttributes.creationTime();
++                date = fileTime.toString();
++            }
++            log.debug(date);
++        }
+         if(Operation.COPY.compareTo(operation)==0) {
+             date = metadata.get(key);
+             log.debug(date);
+Index: src/main/java/de/beres/search/operations/FileHandleCopy.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package de.beres.search.operations;\r\n\r\nimport de.beres.search.ConfigurationProps;\r\nimport de.beres.search.Settings;\r\nimport lombok.Data;\r\nimport lombok.RequiredArgsConstructor;\r\nimport lombok.extern.slf4j.Slf4j;\r\nimport org.apache.tika.exception.TikaException;\r\nimport org.apache.tika.metadata.Metadata;\r\nimport org.apache.tika.parser.AutoDetectParser;\r\nimport org.apache.tika.parser.ParseContext;\r\nimport org.apache.tika.parser.Parser;\r\nimport org.apache.tika.sax.BodyContentHandler;\r\nimport org.springframework.beans.factory.annotation.Autowired;\r\nimport org.springframework.stereotype.Service;\r\nimport org.xml.sax.ContentHandler;\r\nimport org.xml.sax.SAXException;\r\n\r\nimport java.io.IOException;\r\nimport java.io.InputStream;\r\nimport java.nio.file.Path;\r\n\r\n@Slf4j\r\n@Data\r\n@RequiredArgsConstructor\r\n@Service\r\npublic class FileHandleCopy {\r\n    @Autowired\r\n    ParseFile parseFile;\r\n    @Autowired\r\n    ConfigurationProps configurationProps;\r\n    @Autowired\r\n    DateOperations dateOperations;\r\n\r\n    Settings settings;\r\n\r\n\r\n\r\n    public void handleFile(Path file, Settings settings){\r\n        this.settings = settings;\r\n        String date=\"\";\r\n        int index = file.toFile().getName().toString().indexOf(\".\");\r\n        String extension = file.toFile().getName().toString();\r\n        extension = extension.substring(index +1).toLowerCase();\r\n        try {\r\n            switch(extension){\r\n                case \"jpg\":\r\n                    if(settings.getJpg().booleanValue()) {\r\n                        date = parseFile.getKeyValueExtractContentUsingParser(file.toString(), configurationProps.getJpg(), settings.getOperation());\r\n                        dateOperations.convertFromMetadata(date);\r\n                    }\r\n                    break;\r\n                case \"pdf\":\r\n                    if(settings.getPdf().booleanValue()) {\r\n                        date = parseFile.getKeyValueExtractContentUsingParser(file.toString(),configurationProps.getPdf(), settings.getOperation());\r\n                        dateOperations.convertFromMetadata(date);\r\n                    }\r\n                    break;\r\n                case \"nef\":\r\n                    if(settings.getNef().booleanValue()) {\r\n                        date = parseFile.getKeyValueExtractContentUsingParser(file.toString(), configurationProps.getNef(), settings.getOperation());\r\n                        dateOperations.convertFromMetadata(date);\r\n                    }\r\n                    break;\r\n                case \"docx\"://2022-10-17T05:49:00Z\r\n                    if(settings.getDocx().booleanValue()) {\r\n                        date = parseFile.getKeyValueExtractContentUsingParser(file.toString(), configurationProps.getDocx(), settings.getOperation());\r\n                        date = parseFile.getKeyValueUsingDetector(file.toString(), configurationProps.getJpg());\r\n                        dateOperations.convertFromMetadata(date);\r\n                    }\r\n                    break;\r\n                default:;\r\n            }\r\n            log.info(\"Datum: \" + date);\r\n        } catch (IOException e) {\r\n                throw new RuntimeException(e);\r\n        } catch (TikaException e) {\r\n            throw new RuntimeException(e);\r\n        } catch (SAXException e) {\r\n            throw new RuntimeException(e);\r\n        }\r\n    }\r\n    public static String extractContentUsingParser(InputStream stream, String key)\r\n            throws IOException, TikaException, SAXException {\r\n\r\n        Parser parser = new AutoDetectParser();\r\n        ContentHandler handler = new BodyContentHandler();\r\n        Metadata metadata = new Metadata();\r\n        ParseContext context = new ParseContext();\r\n\r\n        parser.parse(stream, handler, metadata, context);\r\n        String date = metadata.get(key);\r\n        log.debug(date);\r\n        return handler.toString();\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/de/beres/search/operations/FileHandleCopy.java b/src/main/java/de/beres/search/operations/FileHandleCopy.java
+--- a/src/main/java/de/beres/search/operations/FileHandleCopy.java	(revision 350b788ac933996c6a892bfbcde939dd326fd186)
++++ b/src/main/java/de/beres/search/operations/FileHandleCopy.java	(date 1718824728361)
+@@ -65,7 +65,12 @@
+                 case "docx"://2022-10-17T05:49:00Z
+                     if(settings.getDocx().booleanValue()) {
+                         date = parseFile.getKeyValueExtractContentUsingParser(file.toString(), configurationProps.getDocx(), settings.getOperation());
+-                        date = parseFile.getKeyValueUsingDetector(file.toString(), configurationProps.getJpg());
++                        //date = parseFile.getKeyValueUsingDetector(file.toString(), configurationProps.getJpg());
++                        dateOperations.convertFromMetadata(date);
++                    }
++                case "js"://2022-10-17T05:49:00Z
++                    if(settings.getJs().booleanValue()) {
++                        date = parseFile.getKeyValueExtractContentUsingParser(file.toString(), configurationProps.getJs(), settings.getOperation());
+                         dateOperations.convertFromMetadata(date);
+                     }
+                     break;
+Index: src/main/java/de/beres/search/ContentSearchResult.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package de.beres.search;\r\n\r\nimport de.beres.search.content.WordTransitiv2Directory;\r\nimport lombok.Data;\r\n\r\n@Data\r\npublic class ContentSearchResult {\r\n    WordTransitiv2Directory wordTransitiv2Directory;\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/de/beres/search/ContentSearchResult.java b/src/main/java/de/beres/search/ContentSearchResult.java
+--- a/src/main/java/de/beres/search/ContentSearchResult.java	(revision 350b788ac933996c6a892bfbcde939dd326fd186)
++++ b/src/main/java/de/beres/search/ContentSearchResult.java	(date 1719168835489)
+@@ -2,8 +2,12 @@
+ 
+ import de.beres.search.content.WordTransitiv2Directory;
+ import lombok.Data;
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.stereotype.Service;
+ 
+ @Data
++@Service
+ public class ContentSearchResult {
++    @Autowired
+     WordTransitiv2Directory wordTransitiv2Directory;
+ }
+Index: src/main/java/de/beres/search/ConfigurationProps.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package de.beres.search;\r\n\r\nimport lombok.Data;\r\nimport lombok.RequiredArgsConstructor;\r\nimport org.springframework.boot.context.properties.ConfigurationProperties;\r\nimport org.springframework.context.annotation.Configuration;\r\n\r\nimport java.nio.file.Path;\r\n\r\n//@Data\r\n@RequiredArgsConstructor\r\n@Data\r\n@ConfigurationProperties(prefix = \"metadata\")\r\n@Configuration\r\npublic class ConfigurationProps {\r\n    private String pdf;\r\n    private String docx;\r\n    private String jpg;\r\n    private String nef;\r\n    private Path targetDir;\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/de/beres/search/ConfigurationProps.java b/src/main/java/de/beres/search/ConfigurationProps.java
+--- a/src/main/java/de/beres/search/ConfigurationProps.java	(revision 350b788ac933996c6a892bfbcde939dd326fd186)
++++ b/src/main/java/de/beres/search/ConfigurationProps.java	(date 1718134368567)
+@@ -13,6 +13,8 @@
+ @ConfigurationProperties(prefix = "metadata")
+ @Configuration
+ public class ConfigurationProps {
++    private String js;
++    private String jsx;
+     private String pdf;
+     private String docx;
+     private String jpg;
+Index: src/main/java/de/beres/search/SearchText.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/de/beres/search/SearchText.java b/src/main/java/de/beres/search/SearchText.java
+new file mode 100644
+--- /dev/null	(date 1719044365998)
++++ b/src/main/java/de/beres/search/SearchText.java	(date 1719044365998)
+@@ -0,0 +1,13 @@
++package de.beres.search;
++
++public class SearchText {
++    private String searchText;
++
++    public String getSearchText() {
++        return searchText;
++    }
++
++    public void setSearchText(String searchText) {
++        this.searchText = searchText;
++    }
++}
+Index: src/main/java/de/beres/search/content/Word2Hash.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package de.beres.search.content;\r\n\r\nimport lombok.Data;\r\nimport lombok.extern.slf4j.Slf4j;\r\n\r\nimport java.io.FileWriter;\r\nimport java.io.IOException;\r\nimport java.util.HashMap;\r\nimport java.util.Map;\r\n\r\n@Slf4j\r\n@Data\r\npublic class Word2Hash extends String2Hash{\r\n    HashMap<String,String> word;\r\n\r\n    public Word2Hash() {\r\n        this.word = new HashMap<>();\r\n    }\r\n\r\n    public String addWord(String string) {\r\n        String code = this.generateHashString(string);\r\n        word.put(string,code);\r\n        return code;\r\n    }\r\n    public void logAll(){\r\n        try {\r\n            FileWriter fileWriter = new FileWriter(\"word.txt\");\r\n            for (Map.Entry<String, String> entry : word.entrySet()) {\r\n                String s = \"Key: \" + entry.getKey() + \" Value: \" + entry.getValue();\r\n                fileWriter.write(s + \"\\n\");\r\n            }\r\n            fileWriter.flush();\r\n            fileWriter.close();\r\n        }catch(IOException e){\r\n            log.error(e.getMessage());\r\n        }\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/de/beres/search/content/Word2Hash.java b/src/main/java/de/beres/search/content/Word2Hash.java
+--- a/src/main/java/de/beres/search/content/Word2Hash.java	(revision 350b788ac933996c6a892bfbcde939dd326fd186)
++++ b/src/main/java/de/beres/search/content/Word2Hash.java	(date 1719173214204)
+@@ -6,6 +6,7 @@
+ import java.io.FileWriter;
+ import java.io.IOException;
+ import java.util.HashMap;
++import java.util.List;
+ import java.util.Map;
+ 
+ @Slf4j
+@@ -17,22 +18,13 @@
+         this.word = new HashMap<>();
+     }
+ 
+-    public String addWord(String string) {
++    public String generateHashAddWord(String string) {
++        string = string.replaceAll("\r|\n|\\u00a0|\\u005c|\\u0022|\\u0027",     "");
++        if(string.length()<=1 ) {
++            return "";
++        }
+         String code = this.generateHashString(string);
+         word.put(string,code);
+         return code;
+     }
+-    public void logAll(){
+-        try {
+-            FileWriter fileWriter = new FileWriter("word.txt");
+-            for (Map.Entry<String, String> entry : word.entrySet()) {
+-                String s = "Key: " + entry.getKey() + " Value: " + entry.getValue();
+-                fileWriter.write(s + "\n");
+-            }
+-            fileWriter.flush();
+-            fileWriter.close();
+-        }catch(IOException e){
+-            log.error(e.getMessage());
+-        }
+-    }
+ }
+Index: src/main/java/de/beres/search/Data.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/de/beres/search/Data.java b/src/main/java/de/beres/search/Data.java
+new file mode 100644
+--- /dev/null	(date 1719044013115)
++++ b/src/main/java/de/beres/search/Data.java	(date 1719044013115)
+@@ -0,0 +1,31 @@
++package de.beres.search;
++
++public class Data {
++    private  String srcDir;
++    private  String dstDir;
++   private String mode;
++
++    public String getSrcDir() {
++        return srcDir;
++    }
++
++    public void setSrcDir(String srcDir) {
++        this.srcDir = srcDir;
++    }
++
++    public String getMode() {
++        return mode;
++    }
++
++    public void setMode(String mode) {
++        this.mode = mode;
++    }
++
++    public String getDstDir() {
++        return dstDir;
++    }
++
++    public void setDstDir(String dstDir) {
++        this.dstDir = dstDir;
++    }
++}
+Index: src/main/java/de/beres/search/operations/DateOperations.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package de.beres.search.operations;\r\n\r\nimport lombok.SneakyThrows;\r\nimport lombok.extern.slf4j.Slf4j;\r\nimport org.springframework.stereotype.Component;\r\n\r\nimport java.text.DateFormat;\r\nimport java.text.ParseException;\r\nimport java.text.SimpleDateFormat;\r\nimport java.util.Calendar;\r\nimport java.util.Date;\r\nimport java.util.Locale;\r\n\r\n@Slf4j\r\n@Component\r\npublic class DateOperations {\r\n    private Date date;\r\n    private int year;\r\n    private int month;\r\n    private int day;\r\n    private String yearAsFormattedString;\r\n    private String yearMonthDayAsFormattedString;\r\n    private String hour;\r\n    private String minute;\r\n    private String second;\r\n    @SneakyThrows(ParseException.class)\r\n    void convertFromMetadata(String dateMetaFormat){\r\n        DateFormat format;\r\n        if(! dateMetaFormat.contains(\"TZ\"))\r\n            format = new SimpleDateFormat(\"yyyy-MM-dd'T'kk:mm:ss'Z'\", Locale.ENGLISH);\r\n        else\r\n            format = new SimpleDateFormat(\"yyyy:MM:dd kk:mm:ss\", Locale.ENGLISH);\r\n            date = format.parse(dateMetaFormat);\r\n            convertDateTo2AtomicElements();\r\n            convertAtomicElements2FormattedResulst();\r\n    }\r\n    void convertDateTo2AtomicElements(){\r\n        DateFormat df = DateFormat.getDateInstance();\r\n        df.format(date);\r\n        year = df.getCalendar().get(Calendar.YEAR);\r\n        month = df.getCalendar().get(Calendar.MONTH) + 1;\r\n        day = df.getCalendar().get(Calendar.DAY_OF_MONTH) + 1;\r\n    }\r\n    void convertAtomicElements2FormattedResulst(){\r\n        yearAsFormattedString = new SimpleDateFormat(\"yyyy\").format(date);\r\n        yearMonthDayAsFormattedString = new SimpleDateFormat(\"yyyy-MM-dd\").format(date);\r\n        log.info(yearAsFormattedString);\r\n        log.info(yearMonthDayAsFormattedString);\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/de/beres/search/operations/DateOperations.java b/src/main/java/de/beres/search/operations/DateOperations.java
+--- a/src/main/java/de/beres/search/operations/DateOperations.java	(revision 350b788ac933996c6a892bfbcde939dd326fd186)
++++ b/src/main/java/de/beres/search/operations/DateOperations.java	(date 1718824728400)
+@@ -26,13 +26,15 @@
+     @SneakyThrows(ParseException.class)
+     void convertFromMetadata(String dateMetaFormat){
+         DateFormat format;
++        if(dateMetaFormat.length() >=23){
++            dateMetaFormat = dateMetaFormat.substring(0, 19) + 'Z';}
+         if(! dateMetaFormat.contains("TZ"))
+             format = new SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ss'Z'", Locale.ENGLISH);
+         else
+             format = new SimpleDateFormat("yyyy:MM:dd kk:mm:ss", Locale.ENGLISH);
+-            date = format.parse(dateMetaFormat);
+-            convertDateTo2AtomicElements();
+-            convertAtomicElements2FormattedResulst();
++        date = format.parse(dateMetaFormat);
++        convertDateTo2AtomicElements();
++        convertAtomicElements2FormattedResulst();
+     }
+     void convertDateTo2AtomicElements(){
+         DateFormat df = DateFormat.getDateInstance();
+Index: src/main/java/de/beres/search/operations/FileHandle.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package de.beres.search.operations;\r\n\r\nimport de.beres.search.ConfigurationProps;\r\nimport de.beres.search.Settings;\r\nimport lombok.Data;\r\nimport lombok.RequiredArgsConstructor;\r\nimport lombok.extern.slf4j.Slf4j;\r\nimport org.apache.tika.exception.TikaException;\r\nimport org.apache.tika.metadata.Metadata;\r\nimport org.apache.tika.parser.AutoDetectParser;\r\nimport org.apache.tika.parser.ParseContext;\r\nimport org.apache.tika.parser.Parser;\r\nimport org.apache.tika.sax.BodyContentHandler;\r\nimport org.springframework.beans.factory.annotation.Autowired;\r\nimport org.springframework.stereotype.Service;\r\nimport org.xml.sax.ContentHandler;\r\nimport org.xml.sax.SAXException;\r\n\r\nimport java.io.IOException;\r\nimport java.io.InputStream;\r\nimport java.nio.file.Path;\r\n\r\n@Slf4j\r\n@Data\r\n@RequiredArgsConstructor\r\n@Service\r\npublic class FileHandle {\r\n    @Autowired\r\n    ParseFile parseFile;\r\n    @Autowired\r\n    ConfigurationProps configurationProps;\r\n    @Autowired\r\n    DateOperations dateOperations;\r\n\r\n    Settings settings;\r\n\r\n\r\n\r\n    public void handleFile(Path file, Settings settings){\r\n        this.settings = settings;\r\n        String date=\"\";\r\n        int index = file.toFile().getName().toString().indexOf(\".\");\r\n        String extension = file.toFile().getName().toString();\r\n        extension = extension.substring(index +1).toLowerCase();\r\n        try {\r\n            switch(extension){\r\n                case \"jpg\":\r\n                    if(settings.getJpg().booleanValue()) {\r\n                        date = parseFile.getKeyValueExtractContentUsingParser(file.toString(), configurationProps.getJpg(), settings.getOperation());\r\n                        dateOperations.convertFromMetadata(date);\r\n                    }\r\n                    break;\r\n                case \"pdf\":\r\n                    if(settings.getPdf().booleanValue()) {\r\n                        date = parseFile.getKeyValueExtractContentUsingParser(file.toString(),configurationProps.getPdf(), settings.getOperation());\r\n                        dateOperations.convertFromMetadata(date);\r\n                    }\r\n                    break;\r\n                case \"nef\":\r\n                    if(settings.getNef().booleanValue()) {\r\n                        date = parseFile.getKeyValueExtractContentUsingParser(file.toString(), configurationProps.getNef(), settings.getOperation());\r\n                        dateOperations.convertFromMetadata(date);\r\n                    }\r\n                    break;\r\n                case \"docx\"://2022-10-17T05:49:00Z\r\n                    if(settings.getDocx().booleanValue()) {\r\n                        date = parseFile.getKeyValueExtractContentUsingParser(file.toString(), configurationProps.getDocx(), settings.getOperation());\r\n                        date = parseFile.getKeyValueUsingDetector(file.toString(), configurationProps.getJpg());\r\n                        dateOperations.convertFromMetadata(date);\r\n                    }\r\n                    break;\r\n                default:;\r\n            }\r\n            log.info(\"Datum: \" + date);\r\n        } catch (IOException e) {\r\n                throw new RuntimeException(e);\r\n        } catch (TikaException e) {\r\n            throw new RuntimeException(e);\r\n        } catch (SAXException e) {\r\n            throw new RuntimeException(e);\r\n        }\r\n    }\r\n    public static String extractContentUsingParser(InputStream stream, String key)\r\n            throws IOException, TikaException, SAXException {\r\n\r\n        Parser parser = new AutoDetectParser();\r\n        ContentHandler handler = new BodyContentHandler();\r\n        Metadata metadata = new Metadata();\r\n        ParseContext context = new ParseContext();\r\n\r\n        parser.parse(stream, handler, metadata, context);\r\n        String date = metadata.get(key);\r\n        log.debug(date);\r\n        return handler.toString();\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/de/beres/search/operations/FileHandle.java b/src/main/java/de/beres/search/operations/FileHandle.java
+--- a/src/main/java/de/beres/search/operations/FileHandle.java	(revision 350b788ac933996c6a892bfbcde939dd326fd186)
++++ b/src/main/java/de/beres/search/operations/FileHandle.java	(date 1718134622104)
+@@ -65,7 +65,19 @@
+                 case "docx"://2022-10-17T05:49:00Z
+                     if(settings.getDocx().booleanValue()) {
+                         date = parseFile.getKeyValueExtractContentUsingParser(file.toString(), configurationProps.getDocx(), settings.getOperation());
+-                        date = parseFile.getKeyValueUsingDetector(file.toString(), configurationProps.getJpg());
++                        //                       date = parseFile.getKeyValueUsingDetector(file.toString(), configurationProps.getJpg());
++                        dateOperations.convertFromMetadata(date);
++                    }
++                    break;
++                case "js":
++                    if(settings.getJs().booleanValue()) {
++                        date = parseFile.getKeyValueExtractContentUsingParser(file.toString(), configurationProps.getJs(), settings.getOperation());
++                        dateOperations.convertFromMetadata(date);
++                    }
++                    break;
++                case "jsx":
++                    if(settings.getJsx().booleanValue()) {
++                        date = parseFile.getKeyValueExtractContentUsingParser(file.toString(), configurationProps.getJsx(), settings.getOperation());
+                         dateOperations.convertFromMetadata(date);
+                     }
+                     break;
+Index: src/main/java/de/beres/search/controller/SocketController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/de/beres/search/controller/SocketController.java b/src/main/java/de/beres/search/controller/SocketController.java
+new file mode 100644
+--- /dev/null	(date 1719386314585)
++++ b/src/main/java/de/beres/search/controller/SocketController.java	(date 1719386314585)
+@@ -0,0 +1,60 @@
++package de.beres.search.controller;
++
++import de.beres.search.content.WordTransitiv2Directory;
++import org.apache.commons.collections4.Bag;
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.messaging.handler.annotation.MessageMapping;
++import org.springframework.messaging.handler.annotation.Payload;
++import org.springframework.messaging.handler.annotation.SendTo;
++import org.springframework.messaging.simp.SimpMessagingTemplate;
++import org.springframework.stereotype.Controller;
++
++import java.util.ArrayList;
++import java.util.List;
++import java.util.concurrent.atomic.AtomicInteger;
++import java.util.stream.Collectors;
++
++@Controller
++public class SocketController {
++
++    int i =0;
++    @Autowired
++    WordTransitiv2Directory wordTransitiv2Directory;
++    List<DirectoryData> stringList = new ArrayList<>();
++    private final SimpMessagingTemplate messagingTemplate;
++    private final static AtomicInteger index = new AtomicInteger(0); // Initialize
++
++    @MessageMapping("/user-all")
++    @SendTo("/topic/user")
++    public MessageBean send(@Payload MessageBean message) {
++        final AtomicInteger i = new AtomicInteger(0); // for creating the IDs
++        System.out.println("SocketController: " + message.getMessage());
++        System.out.println("index: " + index);
++        List<DirectoryData> directoryListData;
++        Bag<String> dirList=  wordTransitiv2Directory.getDirList4Word(message.getMessage());
++        if(dirList == null) {
++            directoryListData = List.of(createDirectoryData("Not Found"));
++            message.setMessage("Not found");
++        }else {
++            directoryListData = dirList.stream()
++                    .map(this::createDirectoryData).collect(Collectors.toList());
++        }
++        message.setDirectoryListData(directoryListData);
++        return message;
++    }
++    private DirectoryData createDirectoryData(String directory) {
++        DirectoryData directoryData = new DirectoryData();
++        directoryData.setDirectory(directory);
++        directoryData.setId(index.getAndIncrement());
++        return directoryData;
++    }
++    @Autowired
++    public SocketController(SimpMessagingTemplate messagingTemplate) {
++        this.messagingTemplate = messagingTemplate;
++    }
++    public void sendMessageToUser(String username, MessageBean message) {
++        messagingTemplate.convertAndSendToUser(
++                username, "/queue/reply", "message oh nice"
++        );
++    }
++}
+\ No newline at end of file
+Index: src/main/java/de/beres/search/controller/DirectoryData.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/de/beres/search/controller/DirectoryData.java b/src/main/java/de/beres/search/controller/DirectoryData.java
+new file mode 100644
+--- /dev/null	(date 1719314008074)
++++ b/src/main/java/de/beres/search/controller/DirectoryData.java	(date 1719314008074)
+@@ -0,0 +1,9 @@
++package de.beres.search.controller;
++
++import lombok.Data;
++
++@Data
++public class DirectoryData {
++    int id;
++    String directory;
++}
+Index: src/main/java/de/beres/search/Settings.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package de.beres.search;\r\n\r\nimport de.beres.search.operations.Operation;\r\nimport lombok.AllArgsConstructor;\r\nimport lombok.Builder;\r\nimport lombok.Data;\r\nimport lombok.RequiredArgsConstructor;\r\n\r\nimport java.nio.file.Path;\r\n\r\n@AllArgsConstructor\r\n@RequiredArgsConstructor\r\n@Data\r\n@Builder\r\npublic class Settings {\r\n    private Boolean pdf;\r\n    private Boolean docx;\r\n    private Boolean nef;\r\n    private Boolean jpg;\r\n    private Path srcDirectory;\r\n    private Path destDirectory;\r\n    private Operation operation;// 1 filter; 2 index; 3 mirror\r\n    ContentSearchResult contentSearchResult;\r\n\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/de/beres/search/Settings.java b/src/main/java/de/beres/search/Settings.java
+--- a/src/main/java/de/beres/search/Settings.java	(revision 350b788ac933996c6a892bfbcde939dd326fd186)
++++ b/src/main/java/de/beres/search/Settings.java	(date 1718134368557)
+@@ -13,6 +13,8 @@
+ @Data
+ @Builder
+ public class Settings {
++    private Boolean js;
++    private Boolean jsx;
+     private Boolean pdf;
+     private Boolean docx;
+     private Boolean nef;
+Index: src/main/java/de/beres/search/controller/MessageBean.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/de/beres/search/controller/MessageBean.java b/src/main/java/de/beres/search/controller/MessageBean.java
+new file mode 100644
+--- /dev/null	(date 1719314008058)
++++ b/src/main/java/de/beres/search/controller/MessageBean.java	(date 1719314008058)
+@@ -0,0 +1,29 @@
++package de.beres.search.controller;
++
++import java.util.List;
++
++public class MessageBean {
++    private String name;
++    private String message;
++    private List<DirectoryData> directoryData;
++
++    public List<DirectoryData> getDirectoryListData() {
++        return directoryData;
++    }
++    public void setDirectoryListData(List<DirectoryData> directoryData) {
++        this.directoryData = directoryData;
++    }
++    public String getName() {
++        return name;
++    }
++
++    public void setName(String name) {
++        this.name = name;
++    }
++    public String getMessage() {
++        return message;
++    }
++    public void setMessage(String message) {
++        this.message = message;
++    }
++}
+\ No newline at end of file
+Index: src/main/java/de/beres/search/WebSocketConfig.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/de/beres/search/WebSocketConfig.java b/src/main/java/de/beres/search/WebSocketConfig.java
+new file mode 100644
+--- /dev/null	(date 1719087753107)
++++ b/src/main/java/de/beres/search/WebSocketConfig.java	(date 1719087753107)
+@@ -0,0 +1,28 @@
++package de.beres.search;
++
++import org.springframework.context.annotation.Configuration;
++import org.springframework.messaging.simp.config.MessageBrokerRegistry;
++import org.springframework.web.bind.annotation.CrossOrigin;
++import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
++import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
++import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
++
++@Configuration
++
++@EnableWebSocketMessageBroker
++public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
++    @Override
++    public void configureMessageBroker(MessageBrokerRegistry config) {
++        config.enableSimpleBroker("/topic","/queue");
++        config.setApplicationDestinationPrefixes("/app");
++    }
++
++    @Override
++    public void registerStompEndpoints(StompEndpointRegistry registry) {
++        registry.addEndpoint("/websocket-chat")
++        //.addEndpoint("/ws-endpoint")
++        //        .addEndpoint("/")
++                .setAllowedOrigins("http://localhost:3000")
++                .withSockJS();
++    }
++}
+\ No newline at end of file
