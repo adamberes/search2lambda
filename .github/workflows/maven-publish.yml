@@ -26,6 +26,15 @@ jobs:
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
+    - name: print-ENV
+      run: "[System.Environment]::GetEnvironmentVariables()"
+    - name: Use Command Prompt to ENV
+      shell: cmd
+      run: 
+        echo %PATH%
+        echo %JAVA_HOME%
+        echo %MAVEN_HOME%
+      
     - name: Build with Maven
       run: mvn -B package --file pom.xml -DskipTests
 
