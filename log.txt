@@ -1,0 +1,28 @@
+npx create-react-app demo-app
+npm install --save-dev serverless-s3-sync
+
+
+npx create-react-app .
+
+npm install @mui/material @emotion/react @emotion/styled
+npm install @mui/icons-material
+npm i axios classnames
+
+npm run build
+aws s3 sync build/ s3://deemo-app-react17
+
+mvn -Pnative native:compile -DskipTests
+      <plugin>
+        <groupId>org.graalvm.buildtools</groupId>
+        <artifactId>native-maven-plugin</artifactId>
+        <version>0.9.28</version>
+      </plugin>
+
+npm install -g @aws-amplify/cli
+npm install bootstrap
+npm install sass
+npm install --save @stomp/stompjs
+
+
+
+2023-12-07T08:32:30.62831Z
