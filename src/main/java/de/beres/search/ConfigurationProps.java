@@ -1,5 +1,5 @@
 package de.beres.search;
- 
+
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
