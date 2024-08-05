@@ -141,7 +141,7 @@
 		<repository>
 			<id>github</id>
 			<name>GitHub Packages</name>
-			<url>https://maven.pkg.github.com/fadamberes/search2lambda</url>
+			<url>https://maven.pkg.github.com/adamberes/search2lambda</url>
 		</repository>
 	</distributionManagement>
 </project>
