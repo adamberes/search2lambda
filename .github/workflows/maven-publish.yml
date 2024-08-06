@@ -24,14 +24,14 @@ jobs:
     - name: Use Command Prompt to ENV
       shell: cmd
       run: 
-        echo %PATH%
-        echo %JAVA_HOME%
-        echo %MAVEN_HOME%
+        echo PATH = $PATH
+        echo JAVA_HOME = $JAVA_HOME
+        echo MAVEN_HOME = $MAVEN_HOME
       
     - name: Build with Maven
       run: mvn -B package --file pom.xml -DskipTests
 
     - name: Publish package
-      run: mvn --settings %USERPROFILE%\.github\workflows\settings.xml --batch-mode -e -X deploy
+      run: mvn --settings $USERPROFILE\.github\workflows\settings.xml --batch-mode -e -X deploy
       env:
         GITHUB_TOKEN: ${{ github.token }}
