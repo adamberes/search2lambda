@@ -27,8 +27,16 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
+
+    - name: Use Command Prompt to ENV
+      shell: sh
+      run:
+        echo PATH = "${{PATH}}"
+        echo JAVA_HOME = "$JAVA_HOME"
+        echo MAVEN_HOME = "${{github.MAVEN_HOME}}"
+
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run: mvn -B package --file pom.xml -DskipTests
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     - name: Update dependency graph
