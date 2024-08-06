@@ -30,6 +30,6 @@ jobs:
       run: mvn -B package --file pom.xml -DskipTests
 
     - name: Publish package
-      run: mvn --settings "$env:USERPROFILE\.github\workflows\settings.xml" --batch-mode -e -X deploy
+      run: mvn --settings "${{env:USERPROFILE}}\.github\workflows\settings.xml" --batch-mode -e -X deploy
       env:
         GITHUB_TOKEN: ${{ github.token }}
