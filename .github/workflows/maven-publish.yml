@@ -8,8 +8,8 @@ on:
     types: [created]
 
 jobs:
-  - name: Deploy with Maven
-    build:
+  build:
+    name: Deploy with Maven
 
     # runs-on: ubuntu-latest
     runs-on: self-hosted
